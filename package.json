@@ -1,0 +1,21 @@
+{
+  "name": "wow",
+  "version": "1.0.0",
+  "keywords": [
+    "util",
+    "functional",
+    "server",
+    "client",
+    "browser"
+  ],
+  "author": "vishaalgopalan",
+  "contributors": [],
+  "dependencies": {
+    "async": "2.6.0",
+    "express": "4.16.3",
+    "fs": "0.0.1-security",
+    "http": "0.0.0",
+    "mysql": "2.15.0",
+    "request": "2.85.0"
+  }
+}
