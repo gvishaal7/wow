@@ -134,13 +134,15 @@ var end_time;
 
 function get_roles(talent, cls) {
     var raid_roles = [];
-    if(talent[0] !== undefined && talent[0]['tree'] !== undefined) {
+    if(talent[0] !== undefined && talent[0]['tree'] !== undefined && roles[cls][talent[0]['tree']] !== undefined) {
         raid_roles = raid_roles.concat(roles[cls][talent[0]['tree']]);
     }
-    if(talent[1] !== undefined && talent[1]['tree'] !== undefined) {
+    if(talent[1] !== undefined && talent[1]['tree'] !== undefined && roles[cls][talent[1]['tree']] !== undefined) {
         raid_roles = raid_roles.concat(roles[cls][talent[1]['tree']]);
     }
-    
+    if(raid_roles.length === 0 || raid_roles[0] === undefined) {
+        raid_roles = ["PvP"];
+    }
     return raid_roles;
 }
 
@@ -154,18 +156,15 @@ function get_comments(player, callback) {
     for(var i in equip) {
         item_ids.push(equip[i]['item']);
     }
-    var query = "SELECT id,gs,sockets FROM items WHERE id IN ?";
+    var query = "SELECT id,name,gs,sockets FROM items WHERE id IN ?";
     var total_gs = 0;
     con.query(query,[[item_ids]], function(error, response) {
         if(error) throw error;
+        if(response !== undefined && response.length > 0) {
+            player['equip'] = response;
+        }
         for(var i in response) {
-            for(var j in equip) {
-                if(response[i]['id'] === parseInt(equip[j]['item'])) {
-                    equip[j]['gs'] = response[i]['gs'];
-                    total_gs += equip[j]['gs'];
-                    equip[j]['sockets'] = response[i]['sockets'];
-                }
-            }
+            total_gs += response[i]['gs'];
         }
         player['gs'] = total_gs;
         player['roles'] = get_roles(talents,player['class']);
@@ -215,7 +214,8 @@ function get_player_details(ppl,res) {
 function get_details(url,callback) {
     request({
         url : url,
-        method : "GET"
+        method : "GET",
+        family : 4
     },function(error, response, body){
         if(error) throw error;
         callback(error,body);
