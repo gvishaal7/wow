@@ -124,11 +124,6 @@ const roles = {
  * taken => increased -ve effect taken by npc -
  */
 
-
-//for(var i in raid_buffs) {
-//    console.log(i, raid_buffs[i]);
-//}
-
 var start_time;
 var end_time;
 
@@ -146,39 +141,61 @@ function get_roles(talent, cls) {
     return raid_roles;
 }
 
+function get_profs(profs) {
+    var profs_name = [];
+    if(profs[0] !== undefined && profs[0]['name'] !== undefined) {
+        profs_name.push(profs[0]['name']);
+    }
+    if(profs[1] !== undefined && profs[1]['name'] !== undefined) {
+        profs_name.push(profs[1]['name']);
+    }
+    return profs_name;
+}
+
 function get_comments(player, callback) {
     var equip = player['equip'];
-    var prof = player['prof'];
+    var prof = player['prof'] = get_profs(player['prof']);    
     var talents = player['talents'];
-    delete equip['transmog'];
     var name = player['name'];
     var item_ids = [];
     for(var i in equip) {
         item_ids.push(equip[i]['item']);
     }
-    var query = "SELECT id,name,gs,sockets FROM items WHERE id IN ?";
+    var query = "SELECT id,name,slot,sockets,gs FROM items WHERE id IN ?";
     var total_gs = 0;
     con.query(query,[[item_ids]], function(error, response) {
         if(error) throw error;
         if(response !== undefined && response.length > 0) {
             player['equip'] = response;
+            equip = response;
         }
         for(var i in response) {
             total_gs += response[i]['gs'];
         }
         player['gs'] = total_gs;
         player['roles'] = get_roles(talents,player['class']);
-        /*const armory_page = warmane_character_page+name+server;
+        const armory_page = warmane_character_page+name+server;
         request({
             url : armory_page,
-            method : "GET"
+            method : "GET",
+            family : 4
         }, function(error, response, body) {
             if(error) throw error;
-            
+            body = body.toString();
+            for(var i in equip) {
+                var type = equip[i]['slot'];
+                if(type !== "Trinket") {
+                    var id = equip[i]['id'];               
+                    var start_index = body.search('rel="item='+id);
+                    var end_index = body.indexOf(">",start_index);
+                    var trimmed_body = body.substring(start_index+16,end_index);
+                    console.log(trimmed_body);
+                }
+            } 
             callback(error,player);
-        });*/
-        console.log(player);
-        callback(error,player);
+        });
+        //console.log(player);
+        //callback(error,player);
     });
 }
 
