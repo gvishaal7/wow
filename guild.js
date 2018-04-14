@@ -161,11 +161,11 @@ function get_comments(player, callback) {
     for(var i in equip) {
         item_ids.push(equip[i]['item']);
     }
-    var query = "SELECT id,name,slot,sockets,gs FROM items WHERE id IN ?";
+    var query = "SELECT id,name,slot,type,sockets,gs,p_type FROM items WHERE id IN ?";
     var total_gs = 0;
     con.query(query,[[item_ids]], function(error, response) {
         if(error) throw error;
-        if(response !== undefined && response.length > 0) {
+        if(response !== undefined && response.length > 0) {            
             player['equip'] = response;
             equip = response;
         }
@@ -180,22 +180,35 @@ function get_comments(player, callback) {
             method : "GET",
             family : 4
         }, function(error, response, body) {
+            var comments = "";
             if(error) throw error;
             body = body.toString();
+            var pvp_flag = false;
             for(var i in equip) {
-                var type = equip[i]['slot'];
-                if(type !== "Trinket") {
+                var slot = equip[i]['slot'];
+                var p_type = equip[i]['p_type'];
+                var type = equip[i]['type'];
+                if(p_type === "PvP") {
+                    pvp_flag = true;
+                }
+                if(slot !== "Trinket") {
                     var id = equip[i]['id'];               
                     var start_index = body.search('rel="item='+id);
                     var end_index = body.indexOf(">",start_index);
                     var trimmed_body = body.substring(start_index+16,end_index);
-                    console.log(trimmed_body);
+                    //console.log(trimmed_body);
+                    if(slot !== "Neck") {
+                        
+                    }
                 }
             } 
+            if(pvp_flag === true) {
+                comments = "The player has equiped PvP items.|";
+            }
+            player['comment'] = comments;
+            //console.log(player);
             callback(error,player);
         });
-        //console.log(player);
-        //callback(error,player);
     });
 }
 
